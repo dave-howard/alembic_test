@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}
+Simple Flask - Admin
+{% endblock %}
+
+{% block content %}
+                <article>
+                    <header>
+                        <h1>Tool Admin</h1>
+                    </header>
+
+                    <section>
+                        <h2>User Management</h2>
+                        <p><a href="{{ url_for('signup') }}" >New User</a></p>
+                        {% for u in users %}
+                        <p>
+                            {{ u.id }}
+                            {{ u.email }}
+                            {{ u.role }}
+                            {% if u.role=="Pending" or u.role=="Disabled" or u.role == None %}
+                            <a href="{{ url_for ('enable_user', user_id=u.id) }}">Enable</a>
+                            {% endif %}
+                            {% if u.role=="Enabled" %}
+                            <a href="{{ url_for ('disable_user', user_id=u.id) }}">Disable</a>
+                            {% endif %}
+                            <a href="{{ url_for ('change_password', user_id=u.id) }}">Reset Password</a>
+                        </p>
+                        {% endfor %}
+                    </section>
+
+                    <footer>
+
+                    </footer>
+                </article>
+{% endblock %}
