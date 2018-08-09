@@ -5,6 +5,7 @@ from Simple_Flask.forms import LoginForm, SignupForm, ChangePasswordForm
 from Simple_Flask.models import User
 from Simple_Flask import app, db, login_manager, models
 import os
+from datetime import datetime
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 Logger = logger.Logger()
@@ -13,8 +14,12 @@ Logger.log("Started.")
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.query.get(int(userid))
-
+    try:
+        u = User.query.get(int(userid))
+        return u
+    except Exception as e:
+        print (e)
+        return AnonymousUserMixin
 
 @app.route("/signup", methods=["GET", "POST"])
 def signup():
@@ -80,7 +85,11 @@ def login():
     if form.validate_on_submit():
         user = User.get_user_by_email(form.email.data)
         # don't allow login for users not yet enabled
-        if user.role == "Pending":
+        if user is None:
+            flash("Your account is not yet created. Please contact your administrator")
+            Logger.log("LOGIN NO USER - users IP:{0} USER:{1} ROLE:{2}".format(
+                request.remote_addr, form.email.data, "none"))
+        elif user.role == "Pending":
             flash("Your account is not activated yet. Please contact your administrator")
             Logger.log("LOGIN PENDING - users IP:{0} USER:{1} ROLE:{2}".format(
                 request.remote_addr, user.email, user.role))
@@ -91,6 +100,8 @@ def login():
         else: # if account has a valid role, and password is correct, then login
             if user is not None and user.check_password(form.password.data):
                 login_user(user, form.remember_me.data)
+                user.last_login = datetime.now()
+                db.session.commit()
                 flash("Logged in as {}.".format(user.email))
                 Logger.log("LOGIN SUCCEEDED - users IP:{0} USER:{1} ROLE:{2}".format(
                     request.remote_addr, current_user.email, current_user.role))
@@ -150,7 +161,11 @@ def index():  # a flask view function
 
 @app.context_processor
 def inject_tags():
-    return dict(users=User.query.all())
+    try:
+        return dict(users=User.query.all())
+    except Exception as e:
+        print (e)
+        return {}
 
 
 @app.errorhandler(404)

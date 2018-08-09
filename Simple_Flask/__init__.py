@@ -7,6 +7,7 @@ app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(24)
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config["SQLALCHEMY_DATABASE_URI"]="sqlite:///" +os.path.join(basedir, "simple_flask.db")
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"]=False
 app.config["DEBUG"]=False
 
 db = SQLAlchemy(app)

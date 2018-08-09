@@ -18,6 +18,11 @@ Simple Flask - Admin
                             {{ u.id }}
                             {{ u.email }}
                             {{ u.role }}
+                            {% if u.last_login %}
+                            {{ u.last_login.strftime("%Y %h %d %H:%M:%S") }}
+                            {% else %}
+                            Never
+                            {% endif%}
                             {% if u.role=="Pending" or u.role=="Disabled" or u.role == None %}
                             <a href="{{ url_for ('enable_user', user_id=u.id) }}">Enable</a>
                             {% endif %}
